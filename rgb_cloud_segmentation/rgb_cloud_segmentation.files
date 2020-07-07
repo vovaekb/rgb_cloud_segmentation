@@ -1,7 +1,0 @@
-build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c
-build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp
-include/rgb_cloud_segmentation/dist_transform_segmenter.h
-include/rgb_cloud_segmentation/segmentation_estimation.h
-src/dist_transform_segmenter.cpp
-src/main.cpp
-src/rgb_segment.cpp
