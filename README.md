@@ -1,6 +1,12 @@
 # rgb_cloud_segmentation
 Application for the segmentation of RGB-D point cloud of scene by means of OpenCV MeanShift method.
 
+Idea: research on methods for segmenting RGB-D point cloud observed from the viewpoint above. 
+Problem: humanoid robot PR2 explores the table from above. Some objects laying on the table have very thin boundaries (e.g. cups) when observed from the viewpoint above thus making detecting such objects difficult. 
+During this project research on different image segmentation methods from OpenCV library was carried out.
+As a result MeanShift method shown best results and was choosen for segmenting RGB-D point cloud of scene.
+
+
 ## Using
 Compile project:
 ```
