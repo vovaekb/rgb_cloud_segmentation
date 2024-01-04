@@ -1,4 +1,4 @@
-//#define ENABLE_ESTIMATOR
+// #define ENABLE_ESTIMATOR
 #define DEBUG_USE_SEGMENTS_MAP
 
 #include <stdio.h>
@@ -15,37 +15,43 @@
 #include "rgb_cloud_segmentation/dist_transform_segmenter.h"
 #include "dist_transform_segmenter.cpp"
 
-typedef pcl::PointXYZRGB PointInT;
-typedef pcl::PointXYZ PointDT;
-typedef pcl::PointCloud<PointInT>::Ptr PointInTPtr;
-typedef pcl::PointCloud<PointDT>::Ptr PointDTPtr;
+
+using PointType = pcl::PointXYZRGB;
+using PointNoColorType = pcl::PointXYZ;
+using PointWithLabelType = pcl::PointXYZL;
+using PointCloud = pcl::PointCloud<PointType>;
+using PointCloudWithLabel = pcl::PointCloud<PointWithLabelType>;
+using PointCloudPtr = pcl::PointCloud<PointType>::Ptr;
+using PointCloudNoColorPtr = pcl::PointCloud<PointNoColorType>::Ptr;
+using PointCloudWithLabelPtr = PointCloudWithLabel::Ptr;
 
 PointInTPtr scene_cloud;
-std::vector<std::vector<cv::Point> > image_segments;
+std::vector<std::vector<cv::Point>> image_segments;
 cv::Mat segments_map;
-std::vector<PointDTPtr> segment_clouds;
+std::vector<PointCloudNoColorPtr> segment_clouds;
 int image_width, image_height;
 
 // Algorithm parameters
-int dist_transform_mask_size (5);
-bool visualize (true);
+int dist_transform_mask_size(5);
+bool visualize(true);
 
-void convertPCLCloud2Image(const PointInTPtr &cloud, cv::Mat_<cv::Vec3b> &image) {
+void convertPCLCloud2Image(const PointInTPtr &cloud, cv::Mat_<cv::Vec3b> &image)
+{
     image_width = cloud->width;
     image_height = cloud->height;
     int position = 0;
 
-//    std::cout << "Point cloud dimensions: " << image_height << " x " << image_width << "\n";
+    //    std::cout << "Point cloud dimensions: " << image_height << " x " << image_width << "\n";
 
     image = cv::Mat_<cv::Vec3b>(image_height, image_width);
 
-    for(int row = 0; row < image_height; row++)
+    for (int row = 0; row < image_height; row++)
     {
-        for(int col = 0; col < image_width; col++)
+        for (int col = 0; col < image_width; col++)
         {
-            cv::Vec3b & cvp = image.at<cv::Vec3b> (row, col);
+            cv::Vec3b &cvp = image.at<cv::Vec3b>(row, col);
             position = row * image_width + col;
-            const PointInT &pt = cloud->points[position];
+            const PointType &pt = cloud->points[position];
 
             cvp[0] = pt.b;
             cvp[1] = pt.g;
@@ -53,31 +59,32 @@ void convertPCLCloud2Image(const PointInTPtr &cloud, cv::Mat_<cv::Vec3b> &image)
         }
     }
 
-//    std::cout << "Point cloud was converted to RGB image successfully\n";
+    //    std::cout << "Point cloud was converted to RGB image successfully\n";
 }
 
 /**
-  * Segment point cloud using areas obtained from RGB image
-  */
-void segmentCloud() {
-    pcl::PointCloud<pcl::PointXYZL>::Ptr labeled_cloud (new pcl::PointCloud<pcl::PointXYZL>);
+ * Segment point cloud using areas obtained from RGB image
+ */
+void segmentCloud()
+{
+    PointCloudWithLabelPtr labeled_cloud(new PointCloudWithLabel);
     labeled_cloud->points.resize(scene_cloud->points.size());
     labeled_cloud->is_dense = false;
-    labeled_cloud->width = static_cast<int> (labeled_cloud->points.size()); // image_width;
-    labeled_cloud->height = 1; // image_height;
+    labeled_cloud->width = static_cast<int>(labeled_cloud->points.size()); // image_width;
+    labeled_cloud->height = 1;                                             // image_height;
 
-    for(int j = 0; j < segments_map.rows; j++) //image_height
+    for (int j = 0; j < segments_map.rows; j++) // image_height
     {
-        for(int k = 0; k < segments_map.cols; k++) // image_width
+        for (int k = 0; k < segments_map.cols; k++) // image_width
         {
             int pos = j * image_width + k;
 
-            pcl::PointXYZL labeled_p;
+            PointWithLabelType labeled_p;
             labeled_p.x = scene_cloud->points[pos].x;
             labeled_p.y = scene_cloud->points[pos].y;
             labeled_p.z = scene_cloud->points[pos].z;
 
-            if(segments_map.at<uchar>(j, k) != 0)
+            if (segments_map.at<uchar>(j, k) != 0)
             {
                 labeled_p.label = segments_map.at<uchar>(j, k);
             }
@@ -93,7 +100,7 @@ void segmentCloud() {
     std::cout << "\n";
 }
 
-void showHelp(char* filename)
+void showHelp(char *filename)
 {
     PCL_INFO("Usage: %s <scene_pcd> [options]\n", filename);
     PCL_INFO("* where options are:\n");
@@ -101,9 +108,9 @@ void showHelp(char* filename)
     PCL_INFO("-vis:\t\t\t\tvisualize the results\n");
 }
 
-void parseCommandLine(int argc, char** argv)
+void parseCommandLine(int argc, char **argv)
 {
-    if(argc < 2)
+    if (argc < 2)
     {
         PCL_ERROR("Scene PCD file missing\n");
         showHelp(argv[0]);
@@ -115,7 +122,7 @@ void parseCommandLine(int argc, char** argv)
     visualize = pcl::console::find_switch(argc, argv, "-vis");
 }
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     parseCommandLine(argc, argv);
 
@@ -123,7 +130,7 @@ int main(int argc, char** argv)
 
     PCL_INFO("Visualize: %s\n", visualize ? "true" : "false");
 
-    scene_cloud.reset(new pcl::PointCloud<PointInT>());
+    scene_cloud.reset(new PointCloud());
     pcl::io::loadPCDFile(argv[1], *scene_cloud);
 
     PCL_INFO("scene cloud has %d points\n", scene_cloud->points.size());
@@ -135,13 +142,13 @@ int main(int argc, char** argv)
 
     cv::imwrite("scene_rgb.jpg", img);
 
-    DistTransformSegmenter segmenter (dist_transform_mask_size, visualize);
+    DistTransformSegmenter segmenter(dist_transform_mask_size, visualize);
     segmenter.loadImage(img);
 
     segmenter.segment();
     segmenter.findAreas();
 
-//    image_segments = segmenter.getAreas();
+    //    image_segments = segmenter.getAreas();
 
     segments_map = segmenter.getSegmentsMap();
 
