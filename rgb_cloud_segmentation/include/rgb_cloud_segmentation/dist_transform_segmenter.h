@@ -10,11 +10,12 @@
 using namespace cv;
 
 /**
-  * Class for performing Distance Transform segmentation in OpenCV
-  */
+ * Class for performing Distance Transform segmentation in OpenCV
+ */
 class DistTransformSegmenter
 {
 public:
+    using points_vector = std::vector<cv::Point>;
     DistTransformSegmenter(int dist_transform_mask_size, bool visualize);
 
     void loadImage(cv::Mat &image);
@@ -23,7 +24,7 @@ public:
 
     void findAreas();
 
-    std::vector<std::vector<cv::Point> > getAreas();
+    std::vector<points_vector> getAreas();
 
     cv::Mat getSegmentsMap();
 
@@ -36,8 +37,8 @@ protected:
     // data
     cv::Mat src_;
     cv::Mat result_;
-    std::vector<std::vector<cv::Point> > contours_;
-    std::vector<std::vector<cv::Point> > areas_;
+    std::vector<points_vector> contours_;
+    std::vector<points_vector> areas_;
 };
 
 #endif // DIST_TRANSFORM_SEGMENTER_H

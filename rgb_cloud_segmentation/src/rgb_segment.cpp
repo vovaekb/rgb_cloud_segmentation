@@ -20,9 +20,10 @@ using PointCloudWithLabel = pcl::PointCloud<PointWithLabelType>;
 using PointCloudPtr = pcl::PointCloud<PointType>::Ptr;
 using PointCloudNoColorPtr = pcl::PointCloud<PointNoColorType>::Ptr;
 using PointCloudWithLabelPtr = PointCloudWithLabel::Ptr;
+using points_vector = std::vector<cv::Point>;
 
 PointCloudPtr scene_cloud;
-std::vector<std::vector<cv::Point>> image_segments;
+std::vector<points_vector> image_segments;
 cv::Mat segments_map;
 std::vector<PointCloudNoColorPtr> segment_clouds;
 int image_width, image_height;
@@ -65,9 +66,9 @@ void segmentCloud()
     labeled_cloud->width = static_cast<int>(labeled_cloud->points.size());
     labeled_cloud->height = 1;
 
-    for (int j = 0; j < segments_map.rows; j++)
+    for (size_t j = 0; j < segments_map.rows; j++)
     {
-        for (int k = 0; k < segments_map.cols; k++)
+        for (size_t k = 0; k < segments_map.cols; k++)
         {
             int pos = j * image_width + k;
 
@@ -88,8 +89,6 @@ void segmentCloud()
     std::string labeled_cloud_pcd = "labeled_cloud.pcd";
 
     pcl::io::savePCDFileASCII(labeled_cloud_pcd.c_str(), *labeled_cloud);
-
-    std::cout << "\n";
 }
 
 void showHelp(char *filename)

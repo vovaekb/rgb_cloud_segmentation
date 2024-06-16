@@ -15,7 +15,6 @@
 #include "rgb_cloud_segmentation/dist_transform_segmenter.h"
 #include "dist_transform_segmenter.cpp"
 
-
 using PointType = pcl::PointXYZRGB;
 using PointNoColorType = pcl::PointXYZ;
 using PointWithLabelType = pcl::PointXYZL;
@@ -26,7 +25,7 @@ using PointCloudNoColorPtr = pcl::PointCloud<PointNoColorType>::Ptr;
 using PointCloudWithLabelPtr = PointCloudWithLabel::Ptr;
 
 PointInTPtr scene_cloud;
-std::vector<std::vector<cv::Point>> image_segments;
+std::vector<points_vector> image_segments;
 cv::Mat segments_map;
 std::vector<PointCloudNoColorPtr> segment_clouds;
 int image_width, image_height;
@@ -40,8 +39,6 @@ void convertPCLCloud2Image(const PointInTPtr &cloud, cv::Mat_<cv::Vec3b> &image)
     image_width = cloud->width;
     image_height = cloud->height;
     int position = 0;
-
-    //    std::cout << "Point cloud dimensions: " << image_height << " x " << image_width << "\n";
 
     image = cv::Mat_<cv::Vec3b>(image_height, image_width);
 
@@ -58,8 +55,6 @@ void convertPCLCloud2Image(const PointInTPtr &cloud, cv::Mat_<cv::Vec3b> &image)
             cvp[2] = pt.r;
         }
     }
-
-    //    std::cout << "Point cloud was converted to RGB image successfully\n";
 }
 
 /**
@@ -70,12 +65,12 @@ void segmentCloud()
     PointCloudWithLabelPtr labeled_cloud(new PointCloudWithLabel);
     labeled_cloud->points.resize(scene_cloud->points.size());
     labeled_cloud->is_dense = false;
-    labeled_cloud->width = static_cast<int>(labeled_cloud->points.size()); // image_width;
-    labeled_cloud->height = 1;                                             // image_height;
+    labeled_cloud->width = static_cast<int>(labeled_cloud->points.size()); // image width
+    labeled_cloud->height = 1;                                             // image height
 
-    for (int j = 0; j < segments_map.rows; j++) // image_height
+    for (int j = 0; j < segments_map.rows; j++) // image height
     {
-        for (int k = 0; k < segments_map.cols; k++) // image_width
+        for (int k = 0; k < segments_map.cols; k++) // image width
         {
             int pos = j * image_width + k;
 
@@ -96,8 +91,6 @@ void segmentCloud()
     std::string labeled_cloud_pcd = "labeled_cloud.pcd";
 
     pcl::io::savePCDFileASCII(labeled_cloud_pcd.c_str(), *labeled_cloud);
-
-    std::cout << "\n";
 }
 
 void showHelp(char *filename)
